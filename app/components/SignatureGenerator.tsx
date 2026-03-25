@@ -289,16 +289,19 @@ export default function SignatureGenerator() {
               {/* Pozice */}
               <div>
                 <label className="block text-xs font-medium text-slate-600 mb-1">Pozice *</label>
-                <select
+                <input
+                  type="text"
+                  list="positions-list"
                   value={form.position}
                   onChange={e => set('position', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-                >
-                  <option value="">— vyberte pozici —</option>
+                  placeholder="Zadejte nebo vyberte pozici…"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <datalist id="positions-list">
                   {POSITIONS.map(p => (
-                    <option key={p} value={p}>{p}</option>
+                    <option key={p} value={p} />
                   ))}
-                </select>
+                </datalist>
               </div>
 
               {/* Firma */}
