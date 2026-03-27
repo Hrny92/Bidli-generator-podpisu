@@ -79,7 +79,7 @@ function buildSignatureHTML(form: FormState, logoSrc: string, color: string): st
 
         <!-- Logo -->
         <p style="margin:14px 0 12px 0;">
-          <img src="${logoSrc}" height="58" alt="Logo" style="display:block;height:58px;border:none;">
+          <img src="${logoSrc}" height="87" alt="Logo" style="display:block;height:87px;border:none;">
         </p>
 
         <!-- Disclaimer -->
