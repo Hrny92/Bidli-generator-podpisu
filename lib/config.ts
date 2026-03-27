@@ -38,10 +38,17 @@ export const DIVISIONS: Division[] = [
   },
   {
     id: 'energie',
-    label: 'Energie, technologie',
+    label: 'Energie',
     color: '#39B07B',
     companies: [
       'BIDLI energie, a. s.',
+    ],
+  },
+  {
+    id: 'technologie',
+    label: 'Technologie',
+    color: '#39B07B',
+    companies: [
       'BIDLI technologie, a.s.',
     ],
   },
