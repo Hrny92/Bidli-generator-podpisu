@@ -26,9 +26,44 @@ interface FormState {
   isSpecialist: boolean
   isPatriot: boolean
   isEC: boolean
+  // Sociální sítě — vše volitelné
+  linkedin: string
+  facebook: string
+  instagram: string
+  youtube: string
+  tiktok: string
+  website: string
 }
 
 type CopyState = 'idle' | 'copied-html' | 'copied-rich'
+
+const SOCIAL_PLATFORMS = [
+  { key: 'linkedin'  as const, label: 'LinkedIn',  color: '#0077B5', placeholder: 'https://linkedin.com/in/...' },
+  { key: 'facebook'  as const, label: 'Facebook',  color: '#1877F2', placeholder: 'https://facebook.com/...'   },
+  { key: 'instagram' as const, label: 'Instagram', color: '#E4405F', placeholder: 'https://instagram.com/...'  },
+  { key: 'youtube'   as const, label: 'YouTube',   color: '#FF0000', placeholder: 'https://youtube.com/...'    },
+  { key: 'tiktok'    as const, label: 'TikTok',    color: '#000000', placeholder: 'https://tiktok.com/@...'    },
+  { key: 'website'   as const, label: 'Web',       color: '#475569', placeholder: 'https://...'                },
+]
+
+function normalizeUrl(url: string): string {
+  if (!url.trim()) return ''
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
+  return `https://${url}`
+}
+
+// Kruhové SVG ikony — bílé pozadí, barevný rámeček a piktogram (barva dle divize)
+function getSocialIcon(key: string, c: string): string {
+  const icons: Record<string, string> = {
+    linkedin: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28"><circle cx="14" cy="14" r="13" fill="#fff" stroke="${c}" stroke-width="1.5"/><rect x="8" y="12" width="2.5" height="8" fill="${c}"/><circle cx="9.25" cy="9.75" r="1.5" fill="${c}"/><path fill="${c}" d="M13.5 12h2.3v1.1c.4-.7 1.2-1.3 2.4-1.3 2.3 0 2.8 1.5 2.8 3.5V20h-2.5v-4.2c0-1 0-2.3-1.4-2.3s-1.6 1.1-1.6 2.2V20h-2.5V12z"/></svg>`,
+    facebook: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28"><circle cx="14" cy="14" r="13" fill="#fff" stroke="${c}" stroke-width="1.5"/><path fill="${c}" d="M15.5 9H17V7h-2c-2 0-3 1.3-3 3v1.5H10V14h2v8h2.5v-8h2l.5-2.5h-2.5V10c0-.3.2-.5.5-.5h.5z"/></svg>`,
+    instagram: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28"><circle cx="14" cy="14" r="13" fill="#fff" stroke="${c}" stroke-width="1.5"/><rect x="8" y="8" width="12" height="12" rx="3.5" fill="none" stroke="${c}" stroke-width="1.5"/><circle cx="14" cy="14" r="3" fill="none" stroke="${c}" stroke-width="1.5"/><circle cx="18.2" cy="9.8" r="1" fill="${c}"/></svg>`,
+    youtube: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28"><circle cx="14" cy="14" r="13" fill="#fff" stroke="${c}" stroke-width="1.5"/><path fill="${c}" d="M22 14s0-2.8-.4-4.2a2 2 0 00-1.4-1.4C18.9 8 14 8 14 8s-4.9 0-6.2.4a2 2 0 00-1.4 1.4C6 11.2 6 14 6 14s0 2.8.4 4.2a2 2 0 001.4 1.4C9.1 20 14 20 14 20s4.9 0 6.2-.4a2 2 0 001.4-1.4C22 16.8 22 14 22 14zm-9.5 3v-6l4.5 3-4.5 3z"/></svg>`,
+    tiktok: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28"><circle cx="14" cy="14" r="13" fill="#fff" stroke="${c}" stroke-width="1.5"/><path fill="${c}" d="M19.5 10.2a3.8 3.8 0 01-3.8-3.8h-2.3v9c0 1.2-1 2.2-2.2 2.2a2.2 2.2 0 01-2.2-2.2c0-1.2 1-2.2 2.2-2.2.2 0 .4 0 .6.1V10.9a4.7 4.7 0 00-.6 0 4.6 4.6 0 00-4.6 4.6 4.6 4.6 0 004.6 4.6 4.6 4.6 0 004.6-4.6v-5a6.1 6.1 0 003.6 1.2v-2.3a3.8 3.8 0 01-1.9-.2z"/></svg>`,
+    website: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28"><circle cx="14" cy="14" r="13" fill="#fff" stroke="${c}" stroke-width="1.5"/><circle cx="14" cy="14" r="6.5" fill="none" stroke="${c}" stroke-width="1.3"/><ellipse cx="14" cy="14" rx="2.8" ry="6.5" fill="none" stroke="${c}" stroke-width="1.3"/><line x1="7.5" y1="14" x2="20.5" y2="14" stroke="${c}" stroke-width="1.3"/><line x1="8.5" y1="10.5" x2="19.5" y2="10.5" stroke="${c}" stroke-width="1.3"/><line x1="8.5" y1="17.5" x2="19.5" y2="17.5" stroke="${c}" stroke-width="1.3"/></svg>`,
+  }
+  return icons[key] ?? ''
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -43,7 +78,7 @@ async function toBase64(url: string): Promise<string> {
   })
 }
 
-function buildSignatureHTML(form: FormState, logoSrc: string, color: string): string {
+function buildSignatureHTML(form: FormState, logoSrc: string, color: string, iconColor: string): string {
   const email = `${form.emailUser}${form.emailDomain}`
   const branch = BRANCHES[form.branchIdx]?.address ?? ''
   const pipe = `<span style="color:${color};font-weight:bold;">|</span>`
@@ -82,6 +117,20 @@ function buildSignatureHTML(form: FormState, logoSrc: string, color: string): st
           <img src="${logoSrc}" height="87" alt="Logo" style="display:block;height:87px;border:none;">
         </p>
 
+        <!-- Sociální sítě -->
+        ${(() => {
+          const links = SOCIAL_PLATFORMS
+            .map(p => ({ ...p, url: normalizeUrl(form[p.key]) }))
+            .filter(p => p.url)
+          if (!links.length) return ''
+          const badges = links.map(p => {
+            const svg = getSocialIcon(p.key, iconColor)
+            const src = `data:image/svg+xml;base64,${btoa(svg)}`
+            return `<a href="${p.url}" target="_blank" title="${p.label}" style="display:inline-block;margin-right:6px;text-decoration:none;"><img src="${src}" width="28" height="28" alt="${p.label}" style="display:block;border:none;border-radius:50%;"></a>`
+          }).join('')
+          return `<p style="margin:0 0 12px 0;">${badges}</p>`
+        })()}
+
         <!-- Disclaimer -->
         <p style="margin:0;font-size:11px;color:#999999;max-width:520px;line-height:1.5;">${DISCLAIMER}</p>
 
@@ -106,6 +155,12 @@ const DEFAULT_FORM: FormState = {
   isSpecialist: false,
   isPatriot: false,
   isEC: false,
+  linkedin: '',
+  facebook: '',
+  instagram: '',
+  youtube: '',
+  tiktok: '',
+  website: '',
 }
 
 export default function SignatureGenerator() {
@@ -118,6 +173,7 @@ export default function SignatureGenerator() {
 
   const selectedDivision: Division | undefined = DIVISIONS.find(d => d.id === form.divisionId)
   const color = selectedDivision?.color ?? '#EF8625'
+  const iconColor = selectedDivision?.hideBadges ? '#000000' : '#142F4C'
   const logoPath = selectedDivision
     ? getLogo(selectedDivision, form.isSpecialist, form.isPatriot, form.isEC)
     : '/images/Bidli.png'
@@ -153,7 +209,7 @@ export default function SignatureGenerator() {
   }
 
   const signatureHTML = isValid
-    ? buildSignatureHTML(form, logoPath, color)
+    ? buildSignatureHTML(form, logoPath, color, iconColor)
     : ''
 
   const handleCopyHTML = async () => {
@@ -270,7 +326,7 @@ export default function SignatureGenerator() {
                   value={form.firstName}
                   onChange={e => set('firstName', e.target.value)}
                   placeholder="Jan"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#142F4C] focus:border-transparent"
                 />
               </div>
 
@@ -282,7 +338,7 @@ export default function SignatureGenerator() {
                   value={form.lastName}
                   onChange={e => set('lastName', e.target.value)}
                   placeholder="Novák"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#142F4C] focus:border-transparent"
                 />
               </div>
 
@@ -295,7 +351,7 @@ export default function SignatureGenerator() {
                   value={form.position}
                   onChange={e => set('position', e.target.value)}
                   placeholder="Zadejte nebo vyberte pozici…"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#142F4C] focus:border-transparent"
                 />
                 <datalist id="positions-list">
                   {POSITIONS.map(p => (
@@ -311,7 +367,7 @@ export default function SignatureGenerator() {
                   value={form.company}
                   onChange={e => set('company', e.target.value)}
                   disabled={!form.divisionId}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white disabled:bg-slate-100 disabled:text-slate-400"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#142F4C] focus:border-transparent bg-white disabled:bg-slate-100 disabled:text-slate-400"
                 >
                   <option value="">— nejprve vyberte divizi —</option>
                   {availableCompanies.map(c => (
@@ -328,7 +384,7 @@ export default function SignatureGenerator() {
                   value={form.phone}
                   onChange={e => set('phone', e.target.value)}
                   placeholder="+420 123 456 789"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#142F4C] focus:border-transparent"
                 />
               </div>
 
@@ -361,7 +417,7 @@ export default function SignatureGenerator() {
                 <select
                   value={form.branchIdx}
                   onChange={e => set('branchIdx', Number(e.target.value))}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#142F4C] focus:border-transparent bg-white"
                 >
                   {BRANCHES.map((b, i) => (
                     <option key={i} value={i}>{b.label} — {b.address}</option>
@@ -392,7 +448,7 @@ export default function SignatureGenerator() {
                     className={`
                       flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all
                       ${form[key]
-                        ? 'border-blue-400 bg-blue-50'
+                        ? 'border-[#142F4C] bg-[#142F4C]/10'
                         : 'border-slate-200 bg-white hover:border-slate-300'
                       }
                     `}
@@ -401,7 +457,7 @@ export default function SignatureGenerator() {
                       type="checkbox"
                       checked={form[key]}
                       onChange={e => set(key, e.target.checked)}
-                      className="w-4 h-4 rounded accent-blue-500"
+                      className="w-4 h-4 rounded accent-[#142F4C]"
                     />
                     <span className="text-sm font-medium text-slate-700">{label}</span>
                     <span className="ml-auto text-xs font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md">
@@ -420,6 +476,32 @@ export default function SignatureGenerator() {
               </div>
             </section>
           )}
+
+          {/* SEKCE 4 — Sociální sítě */}
+          <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-1">
+              {showBadges ? '4.' : '3.'} Sociální sítě a web
+            </h2>
+            <p className="text-xs text-slate-400 mb-4">Vše volitelné — zobrazí se pouze vyplněné.</p>
+            <div className="space-y-3">
+              {SOCIAL_PLATFORMS.map(({ key, label, color, placeholder }) => (
+                <div key={key} className="flex items-center gap-3">
+                  <span
+                    className="flex-shrink-0 w-16 text-center text-xs font-bold text-slate-600 bg-slate-100 py-1 rounded"
+                  >
+                    {label}
+                  </span>
+                  <input
+                    type="url"
+                    value={form[key]}
+                    onChange={e => set(key, e.target.value)}
+                    placeholder={placeholder}
+                    className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#142F4C] focus:border-transparent"
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
 
         </div>
 
