@@ -158,12 +158,15 @@ function buildSignatureHTML(form: FormState, logoSrc: string, color: string, ico
             .map(p => ({ ...p, url: normalizeUrl(form[p.key]) }))
             .filter(p => p.url)
           if (!links.length) return ''
-          const badges = links.map(p => {
+          const cells = links.map(p => {
             const svg = getSocialIcon(p.key, iconColor)
             const src = `data:image/svg+xml;base64,${btoa(svg)}`
-            return `<a href="${p.url}" target="_blank" title="${p.label}" style="display:inline-block;margin-right:6px;text-decoration:none;"><img src="${src}" width="28" height="28" alt="${p.label}" style="display:block;border:none;border-radius:50%;"></a>`
+            return `<td style="padding:0 8px 0 0;">` +
+              `<a href="${p.url}" target="_blank" title="${p.label}" style="text-decoration:none;border:none;display:block;outline:none;">` +
+              `<img src="${src}" width="28" height="28" border="0" alt="${p.label}" style="display:block;border:none;outline:none;text-decoration:none;">` +
+              `</a></td>`
           }).join('')
-          return `<p style="margin:0 0 12px 0;">${badges}</p>`
+          return `<table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 12px 0;"><tr>${cells}</tr></table>`
         })()}
 
         <!-- Disclaimer -->
