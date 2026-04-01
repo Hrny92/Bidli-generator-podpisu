@@ -161,12 +161,12 @@ function buildSignatureHTML(form: FormState, logoSrc: string, color: string, ico
           const cells = links.map(p => {
             const svg = getSocialIcon(p.key, iconColor)
             const src = `data:image/svg+xml;base64,${btoa(svg)}`
-            return `<td style="padding:0 8px 0 0;">` +
-              `<a href="${p.url}" target="_blank" title="${p.label}" style="text-decoration:none;border:none;display:block;outline:none;">` +
-              `<img src="${src}" width="28" height="28" border="0" alt="${p.label}" style="display:block;border:none;outline:none;text-decoration:none;">` +
+            return `<td style="padding:0 8px 0 0;line-height:0;font-size:0;">` +
+              `<a href="${p.url}" target="_blank" title="${p.label}" border="0" style="text-decoration:none;border:none;display:block;line-height:0;font-size:0;outline:none;mso-line-height-rule:exactly;">` +
+              `<img src="${src}" width="28" height="28" border="0" alt="" style="display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;">` +
               `</a></td>`
           }).join('')
-          return `<table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 12px 0;"><tr>${cells}</tr></table>`
+          return `<table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 12px 0;border-collapse:collapse;"><tr>${cells}</tr></table>`
         })()}
 
         <!-- Disclaimer -->
