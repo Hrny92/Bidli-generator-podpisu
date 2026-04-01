@@ -78,6 +78,41 @@ async function toBase64(url: string): Promise<string> {
   })
 }
 
+// Převede SVG data URI na PNG přes canvas — potřebné pro Outlook
+function svgDataUriToPng(svgDataUri: string, size = 28): Promise<string> {
+  return new Promise((resolve) => {
+    const canvas = document.createElement('canvas')
+    canvas.width = size * 2   // 2× pro ostrost na retina
+    canvas.height = size * 2
+    const ctx = canvas.getContext('2d')
+    if (!ctx) { resolve(svgDataUri); return }
+    const img = new Image()
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+      resolve(canvas.toDataURL('image/png'))
+    }
+    img.onerror = () => resolve(svgDataUri) // fallback — ponech SVG
+    img.src = svgDataUri
+  })
+}
+
+// Připraví HTML pro kopírování: logo → base64, SVG ikony → PNG (Outlook)
+async function prepareCopyHtml(html: string, logoPath: string): Promise<string> {
+  const logoBase64 = await toBase64(logoPath)
+  let result = html.replace(logoPath, logoBase64)
+
+  // Najde všechny SVG data URI a převede je na PNG
+  const svgPattern = /(data:image\/svg\+xml;base64,[^"]+)/g
+  let m: RegExpExecArray | null
+  const svgMatches: string[] = []
+  while ((m = svgPattern.exec(result)) !== null) svgMatches.push(m[1])
+  for (const match of svgMatches) {
+    const png = await svgDataUriToPng(match)
+    result = result.split(match).join(png)
+  }
+  return result
+}
+
 function buildSignatureHTML(form: FormState, logoSrc: string, color: string, iconColor: string): string {
   const email = `${form.emailUser}${form.emailDomain}`
   const branch = BRANCHES[form.branchIdx]?.address ?? ''
@@ -214,37 +249,29 @@ export default function SignatureGenerator() {
 
   const handleCopyHTML = async () => {
     try {
-      // Replace image src with base64 for self-contained HTML
-      const base64 = await toBase64(logoPath)
-      const html = signatureHTML.replace(logoPath, base64)
+      const html = await prepareCopyHtml(signatureHTML, logoPath)
       await navigator.clipboard.writeText(html)
       setCopyState('copied-html')
       setTimeout(() => setCopyState('idle'), 2500)
-    } catch (e) {
+    } catch {
       setCopyError('Nepodařilo se zkopírovat. Zkuste to znovu.')
     }
   }
 
   const handleCopyRich = async () => {
     try {
-      const base64 = await toBase64(logoPath)
-      const html = signatureHTML.replace(logoPath, base64)
-      const blob = new Blob([html], { type: 'text/html' })
-      const item = new ClipboardItem({ 'text/html': blob })
-      await navigator.clipboard.write([item])
-      setCopyState('copied-rich')
-      setTimeout(() => setCopyState('idle'), 2500)
-    } catch (e) {
-      // Fallback: try plain writeText
+      const html = await prepareCopyHtml(signatureHTML, logoPath)
       try {
-        const base64 = await toBase64(logoPath)
-        const html = signatureHTML.replace(logoPath, base64)
+        const blob = new Blob([html], { type: 'text/html' })
+        await navigator.clipboard.write([new ClipboardItem({ 'text/html': blob })])
+        setCopyState('copied-rich')
+      } catch {
         await navigator.clipboard.writeText(html)
         setCopyState('copied-html')
-        setTimeout(() => setCopyState('idle'), 2500)
-      } catch {
-        setCopyError('Nepodařilo se zkopírovat. Zkuste to znovu.')
       }
+      setTimeout(() => setCopyState('idle'), 2500)
+    } catch {
+      setCopyError('Nepodařilo se zkopírovat. Zkuste to znovu.')
     }
   }
 
