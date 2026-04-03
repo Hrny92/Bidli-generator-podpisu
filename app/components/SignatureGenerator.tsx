@@ -79,17 +79,17 @@ async function toBase64(url: string): Promise<string> {
 }
 
 // Převede SVG data URI na PNG přes canvas — potřebné pro Outlook
-// 2× canvas pro ostrost, width/height na img říká Outlooku zobrazit ve správné velikosti
+// 1× canvas = PNG je přesně 28×28, žádné škálování → žádný ořez při různých úrovních zoomu
 function svgDataUriToPng(svgDataUri: string, size = 28): Promise<string> {
   return new Promise((resolve) => {
     const canvas = document.createElement('canvas')
-    canvas.width = size * 2
-    canvas.height = size * 2
+    canvas.width = size
+    canvas.height = size
     const ctx = canvas.getContext('2d')
     if (!ctx) { resolve(svgDataUri); return }
     const img = new Image()
     img.onload = () => {
-      ctx.drawImage(img, 0, 0, size * 2, size * 2)
+      ctx.drawImage(img, 0, 0, size, size)
       resolve(canvas.toDataURL('image/png'))
     }
     img.onerror = () => resolve(svgDataUri)
@@ -180,9 +180,9 @@ function buildSignatureHTML(form: FormState, logoSrc: string, color: string, ico
           const cells = links.map(p => {
             const svg = getSocialIcon(p.key, iconColor)
             const src = `data:image/svg+xml;base64,${btoa(svg)}`
-            return `<td valign="top" style="padding:0 8px 0 0;line-height:0;font-size:0;vertical-align:top;">` +
-              `<a href="${p.url}" target="_blank" title="${p.label}" border="0" style="text-decoration:none;border:none;display:block;line-height:0;font-size:0;outline:none;mso-line-height-rule:exactly;">` +
-              `<img src="${src}" width="28" height="28" border="0" alt="" style="display:block;vertical-align:top;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;">` +
+            return `<td valign="top" style="padding:0 8px 0 0;line-height:0;font-size:0;vertical-align:top;overflow:hidden;width:28px;height:28px;">` +
+              `<a href="${p.url}" target="_blank" title="${p.label}" style="text-decoration:none;border:0 none;border-bottom:0 none;display:block;line-height:0;font-size:0;color:inherit;outline:none;mso-line-height-rule:exactly;">` +
+              `<img src="${src}" width="28" height="28" border="0" alt="" style="display:block;vertical-align:top;border:0 none;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;width:28px;height:28px;">` +
               `</a></td>`
           }).join('')
           return `<table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 12px 0;border-collapse:collapse;"><tr valign="top">${cells}</tr></table>`
