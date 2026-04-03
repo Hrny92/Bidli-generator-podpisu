@@ -79,9 +79,18 @@ async function toBase64(url: string): Promise<string> {
 }
 
 // Převede SVG data URI na PNG přes canvas — potřebné pro Outlook
-// 1× canvas = PNG je přesně 28×28, žádné škálování → žádný ořez při různých úrovních zoomu
+// Renderuje na 4× canvas pro ostrost, pak downscaluje na nativní 28×28
+// → Outlook zobrazuje bez škálování (žádný zoom-ořez), ale ikona je ostrá
 function svgDataUriToPng(svgDataUri: string, size = 28): Promise<string> {
   return new Promise((resolve) => {
+    const scale = 4
+    // Vysoké rozlišení pro kvalitu
+    const hiRes = document.createElement('canvas')
+    hiRes.width = size * scale
+    hiRes.height = size * scale
+    const hiCtx = hiRes.getContext('2d')
+    if (!hiCtx) { resolve(svgDataUri); return }
+    // Výstupní canvas v nativní velikosti
     const canvas = document.createElement('canvas')
     canvas.width = size
     canvas.height = size
@@ -89,7 +98,8 @@ function svgDataUriToPng(svgDataUri: string, size = 28): Promise<string> {
     if (!ctx) { resolve(svgDataUri); return }
     const img = new Image()
     img.onload = () => {
-      ctx.drawImage(img, 0, 0, size, size)
+      hiCtx.drawImage(img, 0, 0, size * scale, size * scale)
+      ctx.drawImage(hiRes, 0, 0, size, size)
       resolve(canvas.toDataURL('image/png'))
     }
     img.onerror = () => resolve(svgDataUri)
@@ -180,9 +190,9 @@ function buildSignatureHTML(form: FormState, logoSrc: string, color: string, ico
           const cells = links.map(p => {
             const svg = getSocialIcon(p.key, iconColor)
             const src = `data:image/svg+xml;base64,${btoa(svg)}`
-            return `<td valign="top" style="padding:0 8px 0 0;line-height:0;font-size:0;vertical-align:top;overflow:hidden;width:28px;height:28px;">` +
-              `<a href="${p.url}" target="_blank" title="${p.label}" style="text-decoration:none;border:0 none;border-bottom:0 none;display:block;line-height:0;font-size:0;color:inherit;outline:none;mso-line-height-rule:exactly;">` +
-              `<img src="${src}" width="28" height="28" border="0" alt="" style="display:block;vertical-align:top;border:0 none;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;width:28px;height:28px;">` +
+            return `<td valign="top" bgcolor="#ffffff" style="padding:0 8px 0 0;font-size:0;line-height:0;vertical-align:top;mso-line-height-rule:exactly;">` +
+              `<a href="${p.url}" target="_blank" title="${p.label}" style="color:#ffffff;text-decoration:none;border:0 none;display:inline-block;font-size:0;line-height:0;outline:none;mso-line-height-rule:exactly;">` +
+              `<img src="${src}" width="28" height="28" border="0" alt="" style="display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;">` +
               `</a></td>`
           }).join('')
           return `<table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 12px 0;border-collapse:collapse;"><tr valign="top">${cells}</tr></table>`
