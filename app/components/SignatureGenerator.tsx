@@ -79,19 +79,21 @@ async function toBase64(url: string): Promise<string> {
 }
 
 // Převede SVG data URI na PNG přes canvas — potřebné pro Outlook
+// Canvas je přesně size×size (1×) — Outlook ignoruje width/height atributy
+// a zobrazuje PNG v jeho nativní velikosti, takže nesmí být větší než 28px
 function svgDataUriToPng(svgDataUri: string, size = 28): Promise<string> {
   return new Promise((resolve) => {
     const canvas = document.createElement('canvas')
-    canvas.width = size * 2   // 2× pro ostrost na retina
-    canvas.height = size * 2
+    canvas.width = size
+    canvas.height = size
     const ctx = canvas.getContext('2d')
     if (!ctx) { resolve(svgDataUri); return }
     const img = new Image()
     img.onload = () => {
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+      ctx.drawImage(img, 0, 0, size, size)
       resolve(canvas.toDataURL('image/png'))
     }
-    img.onerror = () => resolve(svgDataUri) // fallback — ponech SVG
+    img.onerror = () => resolve(svgDataUri)
     img.src = svgDataUri
   })
 }
@@ -162,8 +164,11 @@ function buildSignatureHTML(form: FormState, logoSrc: string, color: string, ico
           </tbody>
         </table>
 
+        <!-- Mezera před logem (Outlook-safe) -->
+        <table cellpadding="0" cellspacing="0" border="0"><tr><td style="height:12px;line-height:12px;font-size:12px;">&nbsp;</td></tr></table>
+
         <!-- Logo -->
-        <p style="margin:14px 0 12px 0;">
+        <p style="margin:0 0 12px 0;">
           <img src="${logoSrc}" width="${logoWidth}" height="87" alt="Logo" style="display:block;width:${logoWidth}px;height:87px;border:none;max-width:100%;">
         </p>
 
