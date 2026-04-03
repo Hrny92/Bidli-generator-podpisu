@@ -9,7 +9,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const OUT_DIR = join(__dirname, '../public/images/icons')
 mkdirSync(OUT_DIR, { recursive: true })
 
-const RENDER_SIZE = 28  // nativní 28×28 — přesná shoda s HTML width/height
+const RENDER_SIZE = 56  // 2× retina — ostrý na 4K/Retina displejích, width/height="28" v HTML
 const COLORS = { blue: '#142F4C', black: '#000000' }
 
 function getIcon(key, c, s) {

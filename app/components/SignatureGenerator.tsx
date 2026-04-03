@@ -156,9 +156,9 @@ function buildSignatureHTML(form: FormState, logoSrc: string, color: string, ico
             const src = getIconPng(p.key, iconColor)
             // Obrázek 56×56 px zobrazen jako 28×28 (2× retina)
             // <font color="#ffffff"> skryje případný link-underline z Outlooku
-            return `<td valign="top" style="padding:0 8px 0 0;vertical-align:top;font-size:0;line-height:0;">` +
-              `<font color="#ffffff"><a href="${p.url}" target="_blank" title="${p.label}" style="color:#ffffff;text-decoration:none;border:0;font-size:0;line-height:0;display:inline-block;">` +
-              `<img src="${src}" width="28" height="28" border="0" alt="${p.label}" style="display:block;border:0;-ms-interpolation-mode:bicubic;">` +
+            return `<td valign="top" style="padding:0 8px 0 0;vertical-align:top;">` +
+              `<font color="#ffffff"><a href="${p.url}" target="_blank" title="${p.label}" style="color:#ffffff;text-decoration:none;border:0;display:block;line-height:0;font-size:0;">` +
+              `<img src="${src}" width="28" height="28" border="0" alt="${p.label}" style="display:block;border:0;-ms-interpolation-mode:bicubic;width:28px;height:28px;">` +
               `</a></font></td>`
           }).join('')
           return `<table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 12px 0;border-collapse:collapse;"><tr valign="top">${cells}</tr></table>`
