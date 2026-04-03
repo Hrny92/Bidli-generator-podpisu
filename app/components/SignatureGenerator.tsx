@@ -78,32 +78,28 @@ async function toBase64(url: string): Promise<string> {
   })
 }
 
-// Převede SVG data URI na PNG přes canvas — potřebné pro Outlook
-// Renderuje na 4× canvas pro ostrost, pak downscaluje na nativní 28×28
-// → Outlook zobrazuje bez škálování (žádný zoom-ořez), ale ikona je ostrá
-function svgDataUriToPng(svgDataUri: string, size = 28): Promise<string> {
+// Převede SVG string na PNG přes canvas — potřebné pro Outlook
+// Klíč: přidá explicitní width/height do SVG → browser ví jak velký ho renderovat
+// Renderuje na 4× (112px) pro ostrost, pak downscaluje na nativní 28×28 PNG
+function svgToPng(svgStr: string, size = 28): Promise<string> {
   return new Promise((resolve) => {
     const scale = 4
-    // Vysoké rozlišení pro kvalitu
-    const hiRes = document.createElement('canvas')
-    hiRes.width = size * scale
-    hiRes.height = size * scale
-    const hiCtx = hiRes.getContext('2d')
-    if (!hiCtx) { resolve(svgDataUri); return }
-    // Výstupní canvas v nativní velikosti
+    const renderSize = size * scale
+    // Přidat explicitní rozměry do SVG — bez toho browser renderuje na náhodnou velikost
+    const svgWithDims = svgStr.replace('<svg ', `<svg width="${renderSize}" height="${renderSize}" `)
+    const dataUri = `data:image/svg+xml;base64,${btoa(svgWithDims)}`
     const canvas = document.createElement('canvas')
     canvas.width = size
     canvas.height = size
     const ctx = canvas.getContext('2d')
-    if (!ctx) { resolve(svgDataUri); return }
+    if (!ctx) { resolve(dataUri); return }
     const img = new Image()
     img.onload = () => {
-      hiCtx.drawImage(img, 0, 0, size * scale, size * scale)
-      ctx.drawImage(hiRes, 0, 0, size, size)
+      ctx.drawImage(img, 0, 0, size, size)
       resolve(canvas.toDataURL('image/png'))
     }
-    img.onerror = () => resolve(svgDataUri)
-    img.src = svgDataUri
+    img.onerror = () => resolve(dataUri)
+    img.src = dataUri
   })
 }
 
@@ -112,14 +108,17 @@ async function prepareCopyHtml(html: string, logoPath: string): Promise<string> 
   const logoBase64 = await toBase64(logoPath)
   let result = html.replace(logoPath, logoBase64)
 
-  // Najde všechny SVG data URI a převede je na PNG
-  const svgPattern = /(data:image\/svg\+xml;base64,[^"]+)/g
+  // Najde SVG data URI, dekóduje na SVG string, převede na PNG s explicitními rozměry
+  const svgPattern = /data:image\/svg\+xml;base64,([^"]+)/g
   let m: RegExpExecArray | null
-  const svgMatches: string[] = []
-  while ((m = svgPattern.exec(result)) !== null) svgMatches.push(m[1])
-  for (const match of svgMatches) {
-    const png = await svgDataUriToPng(match)
-    result = result.split(match).join(png)
+  const svgMatches: Array<{ full: string; b64: string }> = []
+  while ((m = svgPattern.exec(result)) !== null) {
+    svgMatches.push({ full: m[0], b64: m[1] })
+  }
+  for (const { full, b64 } of svgMatches) {
+    const svgStr = atob(b64)
+    const png = await svgToPng(svgStr)
+    result = result.split(full).join(png)
   }
   return result
 }
@@ -190,7 +189,7 @@ function buildSignatureHTML(form: FormState, logoSrc: string, color: string, ico
           const cells = links.map(p => {
             const svg = getSocialIcon(p.key, iconColor)
             const src = `data:image/svg+xml;base64,${btoa(svg)}`
-            return `<td valign="top" bgcolor="#ffffff" style="padding:0 8px 0 0;font-size:0;line-height:0;vertical-align:top;mso-line-height-rule:exactly;">` +
+            return `<td valign="top" height="28" bgcolor="#ffffff" style="height:28px;overflow:hidden;padding:0 8px 0 0;font-size:0;line-height:0;vertical-align:top;mso-line-height-rule:exactly;">` +
               `<a href="${p.url}" target="_blank" title="${p.label}" style="color:#ffffff;text-decoration:none;border:0 none;display:inline-block;font-size:0;line-height:0;outline:none;mso-line-height-rule:exactly;">` +
               `<img src="${src}" width="28" height="28" border="0" alt="" style="display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;">` +
               `</a></td>`
