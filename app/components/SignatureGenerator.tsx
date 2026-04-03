@@ -113,10 +113,25 @@ async function prepareCopyHtml(html: string, logoPath: string): Promise<string> 
   return result
 }
 
+// Přesné šířky log při výšce 87 px (vypočteno z originálních rozměrů PNG)
+const LOGO_WIDTHS: Record<string, number> = {
+  '/images/Bidli.png':           226,
+  '/images/Bidli-A.png':         248,
+  '/images/Bidli-B.png':         248,
+  '/images/Bidli-C.png':         248,
+  '/images/Bidli-AB.png':        278,  // odhadnuto — uprav po dodání souboru
+  '/images/Bidli-AC.png':        278,  // odhadnuto — uprav po dodání souboru
+  '/images/Bidli-BC.png':        278,
+  '/images/Bidli-ABC.png':       307,
+  '/images/BIG-Capital@300x.png':226,
+  '/images/BIG-Invest@300x.png': 226,
+}
+
 function buildSignatureHTML(form: FormState, logoSrc: string, color: string, iconColor: string): string {
   const email = `${form.emailUser}${form.emailDomain}`
   const branch = BRANCHES[form.branchIdx]?.address ?? ''
   const pipe = `<span style="color:${color};font-weight:bold;">|</span>`
+  const logoWidth = LOGO_WIDTHS[logoSrc] ?? 226
 
   return `<table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,sans-serif;font-size:13px;color:#333333;line-height:1.4;">
   <tbody>
@@ -149,7 +164,7 @@ function buildSignatureHTML(form: FormState, logoSrc: string, color: string, ico
 
         <!-- Logo -->
         <p style="margin:14px 0 12px 0;">
-          <img src="${logoSrc}" height="87" alt="Logo" style="display:block;height:87px;border:none;">
+          <img src="${logoSrc}" width="${logoWidth}" height="87" alt="Logo" style="display:block;width:${logoWidth}px;height:87px;border:none;max-width:100%;">
         </p>
 
         <!-- Sociální sítě -->
