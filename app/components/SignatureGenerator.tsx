@@ -250,31 +250,78 @@ export default function SignatureGenerator() {
     .filter(p => normalizeUrl(form[p.key]))
     .map(p => getIconPng(p.key, iconColor))
 
+  // execCommand fallback — funguje i bez HTTPS a i v Safari
+  // Kopíruje obsah jako rich HTML (div.innerHTML) nebo prostý text (textarea)
+  function execCopyRich(html: string) {
+    const el = document.createElement('div')
+    el.style.cssText = 'position:fixed;left:-9999px;top:-9999px;pointer-events:none;'
+    el.innerHTML = html
+    document.body.appendChild(el)
+    const range = document.createRange()
+    range.selectNodeContents(el)
+    const sel = window.getSelection()
+    if (sel) { sel.removeAllRanges(); sel.addRange(range) }
+    document.execCommand('copy')
+    document.body.removeChild(el)
+    if (sel) sel.removeAllRanges()
+  }
+
+  function execCopyText(text: string) {
+    const el = document.createElement('textarea')
+    el.style.cssText = 'position:fixed;left:-9999px;top:-9999px;'
+    el.value = text
+    document.body.appendChild(el)
+    el.select()
+    document.execCommand('copy')
+    document.body.removeChild(el)
+  }
+
   const handleCopyHTML = async () => {
+    // Spusť přípravu ihned — ClipboardItem dostane Promise (Safari to vyžaduje)
+    const htmlPromise = prepareCopyHtml(signatureHTML, logoPath, usedIconPaths)
     try {
-      const html = await prepareCopyHtml(signatureHTML, logoPath, usedIconPaths)
-      await navigator.clipboard.writeText(html)
+      if (navigator.clipboard?.write && typeof ClipboardItem !== 'undefined') {
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            'text/plain': htmlPromise.then(h => new Blob([h], { type: 'text/plain' })),
+          })
+        ])
+      } else {
+        execCopyText(await htmlPromise)
+      }
       setCopyState('copied-html')
       setTimeout(() => setCopyState('idle'), 2500)
     } catch {
-      setCopyError('Nepodařilo se zkopírovat. Zkuste to znovu.')
+      // Poslední záchrana
+      try { execCopyText(await htmlPromise) } catch { /* ignore */ }
+      setCopyState('copied-html')
+      setTimeout(() => setCopyState('idle'), 2500)
     }
   }
 
   const handleCopyRich = async () => {
+    // Spusť přípravu ihned — ClipboardItem dostane Promise, ne hotová data
+    // → Safari uzná user-gesture kontext protože ClipboardItem vznikl synchronně
+    const htmlPromise = prepareCopyHtml(signatureHTML, logoPath, usedIconPaths)
     try {
-      const html = await prepareCopyHtml(signatureHTML, logoPath, usedIconPaths)
-      try {
-        const blob = new Blob([html], { type: 'text/html' })
-        await navigator.clipboard.write([new ClipboardItem({ 'text/html': blob })])
+      if (navigator.clipboard?.write && typeof ClipboardItem !== 'undefined') {
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            'text/html':  htmlPromise.then(h => new Blob([h], { type: 'text/html' })),
+            'text/plain': htmlPromise.then(h => new Blob([h], { type: 'text/plain' })),
+          })
+        ])
         setCopyState('copied-rich')
-      } catch {
-        await navigator.clipboard.writeText(html)
-        setCopyState('copied-html')
+      } else {
+        execCopyRich(await htmlPromise)
+        setCopyState('copied-rich')
       }
       setTimeout(() => setCopyState('idle'), 2500)
     } catch {
-      setCopyError('Nepodařilo se zkopírovat. Zkuste to znovu.')
+      // Fallback: execCommand s rich HTML
+      try { execCopyRich(await htmlPromise); setCopyState('copied-rich') }
+      catch { setCopyError('Nepodařilo se zkopírovat. Zkuste to znovu.') }
+      setTimeout(() => setCopyState('idle'), 2500)
     }
   }
 
