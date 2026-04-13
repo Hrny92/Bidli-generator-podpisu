@@ -109,10 +109,10 @@ function buildSignatureHTML(form: FormState, logoSrc: string, color: string, ico
   const pipe = `<span style="color:${color};font-weight:bold;">|</span>`
   const logoWidth = LOGO_WIDTHS[logoSrc] ?? 226
 
-  return `<table cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="font-family:Arial,sans-serif;font-size:13px;color:#333333;line-height:1.4;background-color:#ffffff;">
+  return `<table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,sans-serif;font-size:13px;color:#333333;line-height:1.4;">
   <tbody>
     <tr>
-      <td bgcolor="#ffffff" style="padding:0;vertical-align:top;background-color:#ffffff;color:#333333;">
+      <td style="padding:0;vertical-align:top;">
 
         <!-- Jméno -->
         <p style="margin:0 0 5px 0;font-size:14px;font-weight:bold;color:#333333;">${form.firstName} ${form.lastName}</p>
