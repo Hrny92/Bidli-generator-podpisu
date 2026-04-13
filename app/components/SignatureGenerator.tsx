@@ -143,7 +143,7 @@ function buildSignatureHTML(form: FormState, logoSrc: string, color: string, ico
 
         <!-- Logo -->
         <p style="margin:0 0 12px 0;">
-          <a href="https://www.bidli.cz" target="_blank" style="display:block;border:0;text-decoration:none;"><img src="${logoSrc}" width="${logoWidth}" height="87" alt="Logo" border="0" style="display:block;width:${logoWidth}px;height:87px;border:none;max-width:100%;"></a>
+          <font color="#ffffff"><a href="https://www.bidli.cz" target="_blank" style="display:block;border:0;text-decoration:none;color:#ffffff;line-height:0;font-size:0;"><img src="${logoSrc}" width="${logoWidth}" height="87" alt="Logo" border="0" style="display:block;width:${logoWidth}px;height:87px;border:none;max-width:100%;"></a></font>
         </p>
 
         <!-- Sociální sítě -->
