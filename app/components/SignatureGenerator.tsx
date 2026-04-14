@@ -108,6 +108,9 @@ function buildSignatureHTML(form: FormState, logoSrc: string, color: string, ico
   const branch = BRANCHES[form.branchIdx]?.address ?? ''
   const pipe = `<span style="color:${color};font-weight:bold;">|</span>`
   const logoWidth = LOGO_WIDTHS[logoSrc] ?? 226
+  const logoUrl = logoSrc.includes('BIG-Invest')   ? 'https://www.biginvest.cz/'
+                : logoSrc.includes('BIG-Capital')  ? 'https://www.bigprivate.cz/'
+                : 'https://www.bidli.cz'
 
   return `<table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,sans-serif;font-size:13px;color:#333333;line-height:1.4;">
   <tbody>
@@ -143,7 +146,7 @@ function buildSignatureHTML(form: FormState, logoSrc: string, color: string, ico
 
         <!-- Logo -->
         <p style="margin:0 0 12px 0;">
-          <font color="#ffffff"><a href="https://www.bidli.cz" target="_blank" style="display:block;border:0;text-decoration:none;color:#ffffff;line-height:0;font-size:0;"><img src="${logoSrc}" width="${logoWidth}" height="87" alt="Logo" border="0" style="display:block;width:${logoWidth}px;height:87px;border:none;max-width:100%;"></a></font>
+          <font color="#ffffff"><a href="${logoUrl}" target="_blank" style="display:block;border:0;text-decoration:none;color:#ffffff;line-height:0;font-size:0;"><img src="${logoSrc}" width="${logoWidth}" height="87" alt="Logo" border="0" style="display:block;width:${logoWidth}px;height:87px;border:none;max-width:100%;"></a></font>
         </p>
 
         <!-- Sociální sítě -->
