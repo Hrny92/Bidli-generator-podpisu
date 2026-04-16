@@ -155,6 +155,7 @@ function buildSignatureHTML(form: FormState, logoSrc: string, color: string, ico
             .map(p => ({ ...p, url: normalizeUrl(form[p.key]) }))
             .filter(p => p.url)
           if (!links.length) return ''
+          const followText = `<p style="margin:0 0 8px 0;font-size:12px;color:#333333;font-family:Arial,sans-serif;">Sledujte mne na sítích nebo na mém webu.</p>`
           const cells = links.map(p => {
             const src = getIconPng(p.key, iconColor)
             // Obrázek 56×56 px zobrazen jako 28×28 (2× retina)
@@ -164,7 +165,7 @@ function buildSignatureHTML(form: FormState, logoSrc: string, color: string, ico
               `<img src="${src}" width="28" height="28" border="0" alt="${p.label}" style="display:block;border:0;-ms-interpolation-mode:bicubic;width:28px;height:28px;">` +
               `</a></font></td>`
           }).join('')
-          return `<table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 12px 0;border-collapse:collapse;"><tr valign="top">${cells}</tr></table>`
+          return followText + `<table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 12px 0;border-collapse:collapse;"><tr valign="top">${cells}</tr></table>`
         })()}
 
         <!-- Disclaimer -->
