@@ -57,7 +57,7 @@ export const DIVISIONS: Division[] = [
     label: 'Holding',
     color: '#142F4C',
     companies: [
-      'BIDLI holding, a. s.',
+      'BIDLI',
     ],
   },
   {
