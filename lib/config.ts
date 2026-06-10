@@ -80,6 +80,16 @@ export const DIVISIONS: Division[] = [
       'B.I.G. Capital, a.s.',
     ],
   },
+  {
+    id: 'patriotinvest',
+    label: 'Patriot Invest',
+    color: '#000000',
+    logoOverride: 'patriotinvest.png',
+    hideBadges: true,
+    companies: [
+      'PB Development a.s.',
+    ],
+  },
 ]
 
 // ------------------------------------------------------------
@@ -150,6 +160,7 @@ export const EMAIL_DOMAINS: string[] = [
   '@bigcapital.cz',
   '@biginvest.cz',
   '@biginvest.sk',
+  '@patriotinvest.cz',
 ]
 
 // ------------------------------------------------------------
