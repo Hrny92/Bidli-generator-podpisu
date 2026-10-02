@@ -28,7 +28,7 @@ export const DIVISIONS: Division[] = [
   },
   {
     id: 'finance',
-    label: 'Finance, investice',
+    label: 'Finance',
     color: '#3FB1E1',
     companies: [
       'BIDLI finance a poradenství, s.r.o.',
@@ -67,7 +67,7 @@ export const DIVISIONS: Division[] = [
     logoOverride: 'BIG-Invest@300x.png',
     hideBadges: true,
     companies: [
-      'B.I.G. Invest, o.c.p., a.s.',
+      'B.I.G. Invest, o.c.p., a.s., odštěpný závod',
     ],
   },
   {
@@ -84,10 +84,8 @@ export const DIVISIONS: Division[] = [
     id: 'patriotinvest',
     label: 'Patriot Invest',
     color: '#000000',
-    logoOverride: 'patriotinvest.png',
-    hideBadges: true,
     companies: [
-      'Patriot - Bidli holding, a.s.',
+      'Patriot development holding, a.s.',
     ],
   },
 ]
@@ -182,18 +180,10 @@ export function getLogo(
   // BIG divize mají fixní logo
   if (division.logoOverride) return `/images/${division.logoOverride}`
 
-  // Kombinace odznaků → soubor
-  // Všechny tři
-  if (isSpecialist && isPatriot && isEC)  return '/images/Bidli-ABC.png'
-  // Dvojice
-  if (isSpecialist && isPatriot && !isEC) return '/images/Bidli-AB.png'   // ⚠️ soubor Bidli-AB.png musí být v public/images/
-  if (isSpecialist && !isPatriot && isEC) return '/images/Bidli-AC.png'   // ⚠️ soubor Bidli-AC.png musí být v public/images/
-  if (!isSpecialist && isPatriot && isEC) return '/images/Bidli-BC.png'
-  // Jednotlivé
-  if (isSpecialist && !isPatriot && !isEC) return '/images/Bidli-A.png'
-  if (!isSpecialist && isPatriot && !isEC) return '/images/Bidli-B.png'
-  if (!isSpecialist && !isPatriot && isEC) return '/images/Bidli-C.png'
+  const badges = `${isSpecialist ? 'A' : ''}${isPatriot ? 'B' : ''}${isEC ? 'C' : ''}`
+  if (division.id === 'patriotinvest') {
+    return `/images/PatriotInvest-${badges || 'bez-odznaku'}.png`
+  }
 
-  // Žádné odznaky
-  return '/images/Bidli.png'
+  return `/images/Bidli${badges ? `-${badges}` : ''}.png`
 }
