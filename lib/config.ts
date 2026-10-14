@@ -84,8 +84,6 @@ export const DIVISIONS: Division[] = [
     id: 'patriotinvest',
     label: 'Patriot Invest',
     color: '#000000',
-    logoOverride: 'patriotinvest.png',
-    hideBadges: true,
     companies: [
       'Patriot development holding, a.s.',
     ],
