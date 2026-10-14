@@ -102,6 +102,14 @@ const LOGO_WIDTHS: Record<string, number> = {
   '/images/BIG-Capital@300x.png':  226,
   '/images/BIG-Invest@300x.png':  226,
   '/images/patriotinvest.png':    226,
+  '/images/PatriotInvest-bez-odznaku.png': 226,
+  '/images/PatriotInvest-A.png': 248,
+  '/images/PatriotInvest-B.png': 248,
+  '/images/PatriotInvest-C.png': 248,
+  '/images/PatriotInvest-AB.png': 278,
+  '/images/PatriotInvest-AC.png': 278,
+  '/images/PatriotInvest-BC.png': 278,
+  '/images/PatriotInvest-ABC.png': 307,
 }
 
 function buildSignatureHTML(form: FormState, logoSrc: string, color: string, iconColor: string): string {
@@ -111,7 +119,7 @@ function buildSignatureHTML(form: FormState, logoSrc: string, color: string, ico
   const logoWidth = LOGO_WIDTHS[logoSrc] ?? 226
   const logoUrl = logoSrc.includes('BIG-Invest')      ? 'https://www.biginvest.cz/'
                 : logoSrc.includes('BIG-Capital')     ? 'https://www.bigprivate.cz/'
-                : logoSrc.includes('patriotinvest')   ? 'https://www.patriotinvest.cz/'
+                : logoSrc.toLowerCase().includes('patriotinvest')   ? 'https://www.patriotinvest.cz/'
                 : 'https://www.bidli.cz'
 
   return `<table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,sans-serif;font-size:13px;color:#333333;line-height:1.4;">
@@ -212,7 +220,7 @@ export default function SignatureGenerator() {
 
   const selectedDivision: Division | undefined = DIVISIONS.find(d => d.id === form.divisionId)
   const color = selectedDivision?.color ?? '#EF8625'
-  const iconColor = selectedDivision?.hideBadges ? '#000000' : '#142F4C'
+  const iconColor = selectedDivision?.color === '#000000' ? '#000000' : '#142F4C'
   const logoPath = selectedDivision
     ? getLogo(selectedDivision, form.isSpecialist, form.isPatriot, form.isEC)
     : '/images/Bidli.png'
@@ -518,7 +526,7 @@ export default function SignatureGenerator() {
                 3. Odznaky
               </h2>
               <p className="text-xs text-slate-400 mb-4">
-                Výběr odznaků určuje verzi loga BIDLI v podpisu.
+                Výběr odznaků určuje verzi loga v podpisu.
               </p>
               <div className="space-y-3">
                 {[
